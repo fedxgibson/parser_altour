@@ -14,35 +14,41 @@ class MyParser
     end
     # puts full_text
     # al_flt_clss_meal = lines[0]
-    split_by_date
+    split_by_item split_by_date
   end
 
   private
 
+  # def split_by_date
+  #   date_indexes = []
+  #   number_of_dates = 0
+  #   @lines.each_with_index do |line, index|
+  #     if (/(\d+ \D{3} \d+)/).match(line)
+  #       number_of_dates+=1
+  #       date_indexes.push(index)
+  #     end
+  #   end
+  #
+  #   if number_of_dates < 0
+  #     return [@full_text]
+  #   end
+  #
+  #   date_indexes.push(@lines.length)
+  #   @dates = []
+  #   (0..number_of_dates - 1).each do |index|
+  #     @dates.push(@lines[date_indexes[index]..date_indexes[index + 1] - 1])
+  #   end
+  #   return @dates
+  # end
+
   def split_by_date
-    date_indexes = []
-    number_of_dates = 0
-    @lines.each_with_index do |line, index|
-      if (/(\d+ \D{3} \d+)/).match(line)
-        number_of_dates+=1
-        date_indexes.push(index)
-      end
-    end
-
-    if number_of_dates < 0
-      return [@full_text]
-    end
-
-    date_indexes.push(@lines.length)
-    @dates = []
-    (0..number_of_dates - 1).each do |index|
-      @dates.push(@lines[date_indexes[index]..date_indexes[index + 1] - 1])
-    end
-    return @dates
+    #scans for date + items pattern until next date
+    return @full_text.scan(/((?:\d+ \D{3} \d+)(?:.+?(?=\d+ \D{3} \d+)|.+))/m)
   end
 
-  def split_by_item dates
-
+  def split_by_item dates_with_items
+    puts dates_with_items[0]
+    return 0
   end
 
   # def extract_data
