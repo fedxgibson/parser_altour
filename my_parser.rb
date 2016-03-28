@@ -62,7 +62,8 @@ class MyParser
   end
 
   def itemize text
-    result = text.strip.scan(/(?:\s+)(AIR|HOTEL|CAR)((.+?)(?=\n+(?:\s+)(?:AIR|HOTEL|CAR))|.+)/m)
+    result = text.strip.scan(/(?:\s+)(AIR|HOTEL|CAR)((.+?)\n+(?=(?:\s+)(?:AIR|HOTEL|CAR))|.+)/m)
+    # puts result
     item_objects = []
     result.each do |parsed_item|
       item_object = {
@@ -76,14 +77,14 @@ class MyParser
 
   def extract_data dates_with_items
     parsed_items = []
-    puts dates_with_items
+    # puts dates_with_items
     dates_with_items.each do |date_with_item|
       date_with_item[:items].each do |item|
         case item[:type]
         when 'AIR'
-          parse_air date_with_item[:date], item[:item]
+          # parse_air date_with_item[:date], item[:item]
         when 'CAR'
-          # parse_car date_with_item[:date] item
+          puts item
         when 'HOTEL'
           # parse_hotel date_with_item[:date] item
         else
@@ -110,7 +111,7 @@ class MyParser
         flight_number: /FLT:(\d+)/,
         arrive: /AR.*?(\d+P)/
       }
-      puts item
+      # puts item
       item = item.strip
       # @parsed[:type] = regexps[:type].match(item)[1]
       # @parsed[:airline] = al_flt_clss_meal[(@columns[1]..@columns[2])].rstrip
