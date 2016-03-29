@@ -19,28 +19,6 @@ class MyParser
 
   private
 
-  # def split_by_date
-  #   date_indexes = []
-  #   number_of_dates = 0
-  #   @lines.each_with_index do |line, index|
-  #     if (/(\d+ \D{3} \d+)/).match(line)
-  #       number_of_dates+=1
-  #       date_indexes.push(index)
-  #     end
-  #   end
-  #
-  #   if number_of_dates < 0
-  #     return [@item]
-  #   end
-  #
-  #   date_indexes.push(@lines.length)
-  #   @dates = []
-  #   (0..number_of_dates - 1).each do |index|
-  #     @dates.push(@lines[date_indexes[index]..date_indexes[index + 1] - 1])
-  #   end
-  #   return @dates
-  # end
-
   def split_by_date
     #scans for date + items pattern until next date
     return @item.scan(/((?:\d+ \D{3} \d+)?(?:.+?(?=\d+ \D{3} \d+)|.+))/m)
@@ -62,15 +40,11 @@ class MyParser
   end
 
   def itemize text
-    result = text.strip.scan(/(?:\s+)(AIR|HOTEL|CAR)((.+?)\n+(?=(?:\s+)(?:AIR|HOTEL|CAR))|.+)/m)
+    result = text.strip.scan(/(.+?\n+(?=(?:\s+)(?:AIR|HOTEL|CAR))|.+)/m)
     # puts result
     item_objects = []
     result.each do |parsed_item|
-      item_object = {
-        type: parsed_item[0],
-        item: parsed_item[1]
-      }
-      item_objects.push(item_object)
+      item_objects.push(parsed_item[0])
     end
     return item_objects
   end
@@ -80,19 +54,26 @@ class MyParser
     # puts dates_with_items
     dates_with_items.each do |date_with_item|
       date_with_item[:items].each do |item|
-        case item[:type]
+        case get_type item
         when 'AIR'
-          # parse_air date_with_item[:date], item[:item]
+          object = parse_air date_with_item[:date], item
+          parsed_items.push(object)
         when 'CAR'
-          puts item
+          # object = parse_car date_with_item[:date], item[:item]
+          # parsed_items.push(object)
         when 'HOTEL'
-          # parse_hotel date_with_item[:date] item
+          # object = parse_hotel date_with_item[:date], item[:item]
+          # parsed_items.push(object)
         else
-          0
         end
       end
     end
-    return 0
+    return parsed_items
+  end
+
+  def get_type item
+    type =  item.strip.match(/^(AIR|HOTEL|CAR)/)
+    return type[0]
   end
 
   def parse_air(date, item)
@@ -111,24 +92,25 @@ class MyParser
         flight_number: /FLT:(\d+)/,
         arrive: /AR.*?(\d+P)/
       }
-      # puts item
+      parsed = {}
       item = item.strip
-      # @parsed[:type] = regexps[:type].match(item)[1]
-      # @parsed[:airline] = al_flt_clss_meal[(@columns[1]..@columns[2])].rstrip
-      # @parsed[:flight_number] = regexps[:flight_number].match(item)[1]
-      # @parsed[:class] = al_flt_clss_meal[(@columns[3]..@columns[4])].rstrip
-      # @parsed[:meal] = al_flt_clss_meal[@columns[4]..-2]
-      # @parsed[:operated_by] = regexps[:operated_by].match(item)[1]
-      # @parsed[:from] = regexps[:from].match(item)[1]
-      # @parsed[:aircraft_type] = regexps[:aircraft_type].match(item)[1]
-      # @parsed[:depart] = regexps[:depart].match(item)[1]
-      # @parsed[:duration] = regexps[:duration].match(item)[0]
-      # @parsed[:to] = regexps[:to].match(item)[1].rstrip
-      # @parsed[:stops] = regexps[:stops].match(item)[0] == 'NON-STOP'?0:1
-      # @parsed[:arrive] = regexps[:arrive].match(item)[1]
-      # @parsed[:confirmation_number] = regexps[:confirmation_number].match(item)[1]
+      al_flt_clss_meal = item.lines[0]
 
-      return @parsed
+      parsed[:type] = regexps[:type].match(item)[0]
+      parsed[:airline] = al_flt_clss_meal[(@columns[1]..@columns[2])].rstrip
+      parsed[:flight_number] = regexps[:flight_number].match(item)[1].strip
+      parsed[:class] = al_flt_clss_meal[(@columns[3]..@columns[4])].rstrip
+      parsed[:meal] = al_flt_clss_meal[@columns[4]..-2].strip
+      parsed[:operated_by] = regexps[:operated_by].match(item)[1].strip
+      parsed[:from] = regexps[:from].match(item)[1].strip
+      parsed[:aircraft_type] = regexps[:aircraft_type].match(item)[1].strip
+      parsed[:depart] = regexps[:depart].match(item)[1].strip
+      parsed[:duration] = regexps[:duration].match(item)[0].strip
+      parsed[:to] = regexps[:to].match(item)[1].rstrip
+      parsed[:stops] = regexps[:stops].match(item)[0] == 'NON-STOP'?0:1
+      parsed[:arrive] = regexps[:arrive].match(item)[1].strip
+      parsed[:confirmation_number] = regexps[:confirmation_number].match(item)[1]
+      return parsed
   end
 
   def parse_car(date, item)
